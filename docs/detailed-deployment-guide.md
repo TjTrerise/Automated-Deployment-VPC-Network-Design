@@ -22,7 +22,7 @@ Head over to the S3 Console
      - Disable bucket versioning.
      - Default encryption.
      - Create bucket.
-![Created S3 Buckets](/visual-guides/1.create-s3-buckets.png)
+![Created S3 Buckets](visual-guides/1.create-s3-buckets.png)
 
 ### Step 2: Create The CloudFormation Service Role and IAM Role
 
@@ -111,7 +111,7 @@ Resources:
 
   - Upload both of the files into a bucket of your choosing. 
 
-![Create Roles](/visual-guides/2.create-roles.png)
+![Create Roles](visual-guides/2.create-roles.png)
 
 
 ### Step 3: Launch The CloudFormation & IAM Role
@@ -125,7 +125,7 @@ Head over to CloudFormation
     - Name: `multi-region-vpc-cloudformation-service-role`
     - Leave all other settings as default.
     - Review and submit.
-![CloudFormation Service Role Stack](/visual-guides/3.cloudformation-service-role-stack.png)
+![CloudFormation Service Role Stack](visual-guides/3.cloudformation-service-role-stack.png)
 
   - Next launch the IAM role stack.
   - Click on *Stacks*
@@ -136,7 +136,7 @@ Head over to CloudFormation
     - Name: `multi-region-iam-role-ec2`
     - Leave all other settings as default.
     - Review and submit.
-![IAM Role Stack](/visual-guides/3.iam-role-ec2.png)
+![IAM Role Stack](visual-guides/3.iam-role-ec2.png)
 
 ### Step 4: Create the VPC YAML Files.
 
@@ -1206,7 +1206,7 @@ Resources:
     - Acknowledge the warnings.
     - Review and submit.
 
-![US Created Stack](/visual-guides/7.create-us-stack.png)
+![US Created Stack](visual-guides/7.create-us-stack.png)
 
 
   - Once you have uploaded these.
@@ -1222,7 +1222,7 @@ Resources:
     - Acknowledge the warnings.
     - Review and submit.
 
-![EU Created Stack](/visual-guides/7.create-eu-stack.png)
+![EU Created Stack](visual-guides/7.create-eu-stack.png)
 
 
 ### Step 8: Create The Peering Attachment Files, Upload and Accept The Attachment
@@ -1268,7 +1268,7 @@ Outputs:
     - Acknowledge the warnings.
     - Review and submit.
 
-![Created Peering Stack](/visual-guides/8.created-peering-stack.png)
+![Created Peering Stack](visual-guides/8.created-peering-stack.png)
 
   - Once created go onto the us-east-1 VPC console
     - Select Transit gateway attachments.
@@ -1276,7 +1276,7 @@ Outputs:
     - Right click and Accept peering connection.
     - Make a note of the Transit gateway attachment ID
 
-![Accept Peering Connection](/visual-guides/8.accept-peering.png)
+![Accept Peering Connection](visual-guides/8.accept-peering.png)
 
 ### Step 9: Create the Peering Routes And Associations 
 
@@ -1317,7 +1317,7 @@ Resources:
     - Acknowledge the warnings.
     - Review and submit.
 
-![EU Peering Route](/visual-guides/9.created-peering-routes-eu.png)
+![EU Peering Route](visual-guides/9.created-peering-routes-eu.png)
 
   - Create another YAML file  called `us-peering-routes.yaml`, copy and paste the following code into that file and upload to the US bucket. 
 
@@ -1352,7 +1352,7 @@ Resources:
     - Acknowledge the warnings.
     - Review and submit.
 
-![US Peering Route](/visual-guides/9.created-peering-routes-us.png)
+![US Peering Route](visual-guides/9.created-peering-routes-us.png)
 
 
 ### Step 9: Test Connectivity 
@@ -1383,7 +1383,7 @@ Connect to eu-Private-Test-Instance-AZ1.
 
  - If successful these will prove inter-region connectivity as well as connectivity to the outside world.
 
-![Successful Pings EU](/visual-guides/9eu-west-2-test.png)
+![Successful Pings EU](visual-guides/9eu-west-2-test.png)
 
 
 Connect to us-Private-Test-Instance-AZ1.
@@ -1398,4 +1398,4 @@ Connect to us-Private-Test-Instance-AZ1.
 
  - If successful these will prove inter-region connectivity as well as connectivity to the outside world.
 
-![Successful Pings US](/visual-guides/9.us-east-1-test.png)
+![Successful Pings US](visual-guides/9.us-east-1-test.png)
