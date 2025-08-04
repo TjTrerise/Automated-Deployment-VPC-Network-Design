@@ -1,0 +1,101 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creating the tgw for region 2
+
+Parameters:
+  
+  UsVpcId:
+    Type: String
+    Description: The ID for the US VPC
+  PrivateSubnet1Id:
+    Type: String
+    Description: The ID for the first private subnet
+  PrivateSubnet2Id:
+    Type: String
+    Description: The ID for the second private subnet
+  PrivateRouteTable1Id:
+    Type: String
+    Description: The route table for the first private subnet
+  PrivateRouteTable2Id:
+    Type: String
+    Description: The Route table for the second private subnet
+
+Resources:
+
+  UsTgw:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+      DefaultRouteTableAssociation: disable
+      DefaultRouteTablePropagation: disable
+      Tags:
+      - Key: Name
+        Value: us-tgw
+
+  UsTgwRt:
+    Type: AWS::EC2::TransitGatewayRouteTable
+    Properties:
+      Tags: 
+      - Key: Name
+        Value: us-tgw-rt
+      TransitGatewayId: !Ref UsTgw
+
+  UsTgwAttVpc:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties:
+      SubnetIds: 
+      - !Ref PrivateSubnet1Id
+      - !Ref PrivateSubnet2Id
+      TransitGatewayId: !Ref UsTgw 
+      VpcId: !Ref UsVpcId
+      Tags:
+      - Key: Name
+        Value: us-tgw-att-vpc
+  
+  UsTgwVpcAttachmentAssociation:
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    DependsOn: 
+      - UsTgwAttVpc
+      - UsTgwRt
+    Properties:
+      TransitGatewayAttachmentId: !Ref UsTgwAttVpc
+      TransitGatewayRouteTableId: !Ref UsTgwRt
+
+  UsTgwVpcRoute:
+    Type: AWS::EC2::TransitGatewayRoute
+    DependsOn: UsTgwVpcAttachmentAssociation
+    Properties:
+      DestinationCidrBlock: 10.32.0.0/16
+      TransitGatewayAttachmentId: !Ref UsTgwAttVpc
+      TransitGatewayRouteTableId: !Ref UsTgwRt
+  
+  PrivateSubnet1RouteToVpc:
+    Type: AWS::EC2::Route
+    DependsOn: UsTgwAttVpc
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1Id
+      DestinationCidrBlock: 10.16.0.0/16
+      TransitGatewayId: !Ref UsTgw
+
+  PrivateSubnet2RouteToVpc:
+    Type: AWS::EC2::Route
+    DependsOn: UsTgwAttVpc
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2Id
+      DestinationCidrBlock: 10.16.0.0/16
+      TransitGatewayId: !Ref UsTgw
+  
+Outputs: 
+
+  UsTgwId:
+    Description: The transit gateway for US region
+    Value: !Ref UsTgw
+    Export:
+      Name: UsTgwId
+  
+  UsTgwRtId:
+    Description: The transit gateway route table for US region
+    Value: !Ref UsTgwRt
+    Export:
+      Name: UsTgwRtId
+    
+
+

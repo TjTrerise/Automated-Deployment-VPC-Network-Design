@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: IAM role for CloudFormation to assume when managing stacks.
+
+Resources:
+  CloudFormationServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CloudFormationServiceRole-MultiRegion
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudformation.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: CloudFormationStackManagementPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'CloudFormation:*'
+                  - 'iam:*'
+                  - 'ec2:*'         
+                  - 'iam:*'          
+                  - 's3:*'           
+                  - 'logs:*'       
+                Resource: '*'
+
+
+Outputs:
+  CloudFormationServiceRoleArn:
+    Description: The ARN of the CloudFormation Service Role.
+    Value: !GetAtt CloudFormationServiceRole.Arn
+    Export:
+      Name: CloudFormationServiceRoleArn

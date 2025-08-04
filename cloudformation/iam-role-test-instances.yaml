@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creating the instance role for EC2
+
+Resources:
+
+  IamInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ec2-allow-ssm-cloudwatch-role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      ManagedPolicyArns:
+       - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+       - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      
+      Tags:
+        - Key: Name
+          Value: ec2-allow-ssm-cloudwatch
+  
+  IamInstanceRoleParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /app/iam/ec2-allow-ssm-cloudwatch-role-name 
+      Type: String
+      Value: !Ref IamInstanceRole 
+      Description: IAM role name for EC2 instances allowing SSM and CloudWatch access.
+  
+

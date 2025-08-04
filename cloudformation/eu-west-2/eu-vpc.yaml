@@ -1,0 +1,218 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creating the VPC for region 1
+
+Resources:
+
+  EuVpc:
+    Type: "AWS::EC2::VPC"
+    Properties:
+      CidrBlock: 10.16.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true 
+      Tags:
+        - Key: Name
+          Value: my-vpc-eu-west-2
+
+  EuInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: EuVpc
+    Properties:
+      Tags:
+        - Key: Name
+          Value: my-igw-eu-west-2
+
+  AttachEuGateway: 
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn: 
+        - EuInternetGateway
+    Properties:
+      InternetGatewayId: !Ref EuInternetGateway
+      VpcId: !Ref EuVpc
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EuVpc 
+      AvailabilityZone: !Select [ 0, !GetAZs "" ]
+      CidrBlock: 10.16.0.0/20
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: my-public-subnet-az1-eu-west-2
+  
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EuVpc
+      AvailabilityZone: !Select [1, !GetAZs "" ]
+      CidrBlock: 10.16.16.0/20
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: my-public-subnet-az2-eu-west-2
+    
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref EuVpc
+      AvailabilityZone: !Select [0, !GetAZs "" ]
+      MapPublicIpOnLaunch: false
+      CidrBlock: 10.16.32.0/20
+      Tags:
+        - Key: Name
+          Value: my-private-subnet-az1-eu-west-2
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      VpcId: !Ref EuVpc
+      AvailabilityZone: !Select [1, !GetAZs "" ]
+      MapPublicIpOnLaunch: false
+      CidrBlock: 10.16.48.0/20
+      Tags: 
+        - Key: Name
+          Value: my-private-subnet-az2-eu-west-2
+
+  ElasticIp1:
+    Type: AWS::EC2::EIP
+    Properties: 
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: eip1-Nat-Gateway-Subnet-1
+
+  ElasticIp2:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags: 
+        - Key: Name
+          Value: eip2-Nat-Gateway-Subnet-2
+  
+  NatGatewayAz1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIp1.AllocationId
+      SubnetId: !Ref PublicSubnet1
+      Tags:
+        - Key: Name
+          Value: eu-nat-gw-az1
+
+  NatGatewayAz2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt ElasticIp2.AllocationId
+      SubnetId: !Ref PublicSubnet2
+      Tags:
+        - Key: Name
+          Value: eu-nat-gw-az2
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable 
+    Properties:
+      VpcId: !Ref EuVpc 
+      Tags:
+        - Key: Name
+          Value: my-public-rt-eu-west-2
+  
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EuVpc
+      Tags: 
+        - Key: Name
+          Value: eu-private-rt-az1-eu-west-2
+
+  PrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref EuVpc
+      Tags:
+        - Key: Name
+          Value: eu-private-rt-az2-eu-west-2
+  
+  PublicRtAssociations1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+  
+  PublicRtAssociations2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  PrivateRtAssociations1:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref PrivateSubnet1
+
+  PrivateRtAssociations2:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      SubnetId: !Ref PrivateSubnet2
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachEuGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref EuInternetGateway
+  
+  PrivateRoute1External:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayAz1
+
+  PrivateRoute2External:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayAz2
+  
+Outputs: 
+
+  EuVpcId:
+    Description: The VPC for the EU Region
+    Value: !Ref EuVpc
+      
+  PublicSubnet1Id:
+    Description: The first public subnet for the EU VPC
+    Value: !Ref PublicSubnet1
+    
+  
+  PublicSubnet2Id:
+    Description: The second public subnet for the EU VPC
+    Value: !Ref PublicSubnet2
+    
+    
+  PrivateSubnet1Id:
+    Description: The first private subnet for the EU VPC
+    Value: !Ref PrivateSubnet1
+   
+    
+  PrivateSubnet2Id:
+    Description: The second private subnet for the EU VPC
+    Value: !Ref PrivateSubnet2
+    
+  PublicRouteTableId:
+    Description: The public route table for the eu VPC
+    Value: !Ref PublicRouteTable
+    
+  
+  PrivateRouteTable1Id:
+    Description: The first private route table for the EU VPC
+    Value: !Ref PrivateRouteTable1
+    
+    
+  PrivateRouteTable2Id:
+    Description: The second private route table for the EU VPC
+    Value: !Ref PrivateRouteTable2
+    

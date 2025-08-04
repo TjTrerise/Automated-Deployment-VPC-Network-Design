@@ -1,0 +1,18 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creating the peering route for US side. 
+
+Resources: 
+
+  EuTgwVpcAttachmentAssociation:
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    Properties:
+      TransitGatewayAttachmentId: <enter peering attachment>
+      TransitGatewayRouteTableId: !ImportValue UsTgwRtId
+
+  TgwPeeringRoute:
+    Type: AWS::EC2::TransitGatewayRoute
+    Properties:
+      DestinationCidrBlock: 10.16.0.0/16
+      TransitGatewayAttachmentId: <enter peering attachment>
+      TransitGatewayRouteTableId: !ImportValue UsTgwRtId
+  

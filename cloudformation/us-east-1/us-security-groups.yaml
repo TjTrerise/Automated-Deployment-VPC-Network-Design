@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creating the security group for region 2
+
+Parameters:
+  UsVpcId:
+    Type: String
+    Description: The ID for the US VPC
+
+Resources:
+
+  UsEC2TestSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group that controls EC2 test instances
+      VpcId: !Ref UsVpcId
+      SecurityGroupIngress: 
+        - IpProtocol: -1
+          CidrIp: 10.16.0.0/16
+        - IpProtocol: -1
+          CidrIp: 10.32.0.0/16
+
+Outputs: 
+  UsEC2TestSgId:
+    Description: Security group for the US test instances.
+    Value: !Ref UsEC2TestSg
+   
+
+      

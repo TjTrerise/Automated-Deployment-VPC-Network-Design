@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creating the EC2 instances for region 1
+
+
+Parameters:
+  EuVpcId:
+    Type: String
+    Description: The EU VPC ID
+  PublicSubnet1Id:
+    Type: String
+    Description: The public subnet 1 ID
+  PublicSubnet2Id:
+    Type: String
+    Description: The public subnet 2 ID
+  PrivateSubnet1Id:
+    Type: String
+    Description: The private subnet 1 ID
+  PrivateSubnet2Id:
+    Type: String
+    Description: The private subnet 2 ID
+  EuEC2TestSgId:
+    Type: String
+    Description: The security group ID
+
+Resources:
+
+  MyEc2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - ec2-allow-ssm-cloudwatch-role
+      InstanceProfileName: !Sub 'ec2-allow-ssm-cloudwatch-role-${AWS::Region}'
+
+  InstancePublic1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-00fefe800bd08f8da
+      InstanceType: t2.micro
+      SubnetId: !Ref PublicSubnet1Id
+      SecurityGroupIds:
+        - !Ref EuEC2TestSgId
+      IamInstanceProfile: !Ref MyEc2InstanceProfile 
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+      Tags:
+      - Key: Name
+        Value: EU-Public-Test-Instance-AZ1
+
+  InstancePublic2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-00fefe800bd08f8da
+      InstanceType: t2.micro
+      SubnetId: !Ref PublicSubnet2Id
+      SecurityGroupIds:
+        - !Ref EuEC2TestSgId
+      IamInstanceProfile: !Ref MyEc2InstanceProfile
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+      Tags:
+      - Key: Name
+        Value: EU-Public-Test-Instance-AZ2
+  
+  InstancePrivate1:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-00fefe800bd08f8da
+      InstanceType: t2.micro
+      SubnetId: !Ref PrivateSubnet1Id
+      SecurityGroupIds:
+        - !Ref EuEC2TestSgId
+      IamInstanceProfile: !Ref MyEc2InstanceProfile
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+      Tags:
+      - Key: Name
+        Value: EU-Private-Test-Instance-AZ1
+
+  InstancePrivate2:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-00fefe800bd08f8da
+      InstanceType: t2.micro
+      SubnetId: !Ref PrivateSubnet2Id
+      SecurityGroupIds:
+        - !Ref EuEC2TestSgId
+      IamInstanceProfile: !Ref MyEc2InstanceProfile 
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum update -y
+      Tags:
+      - Key: Name
+        Value: EU-Private-Test-Instance-AZ2

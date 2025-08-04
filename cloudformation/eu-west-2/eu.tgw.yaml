@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creating the tgw for region 1
+
+Parameters:
+  
+  EuVpcId:
+    Type: String
+    Description: The EU VPC ID
+  PrivateSubnet1Id:
+    Type: String
+    Description: The first private subnet ID
+  PrivateSubnet2Id:
+    Type: String 
+    Description: The second private subnet ID
+  PrivateRouteTable1Id:
+    Type: String
+    Description: The route table for the first private subnet
+  PrivateRouteTable2Id:
+    Type: String
+    Description: The Route table for the second private subnet
+
+Resources:
+
+  EuTgw:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+      DefaultRouteTableAssociation: disable
+      DefaultRouteTablePropagation: disable
+      Tags:
+      - Key: Name
+        Value: eu-tgw
+
+  EuTgwRt:
+    Type: AWS::EC2::TransitGatewayRouteTable
+    Properties:
+      Tags: 
+      - Key: Name
+        Value: eu-tgw-rt
+      TransitGatewayId: !Ref EuTgw
+
+  EuTgwAttVpc:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties:
+      SubnetIds: 
+      - !Ref PrivateSubnet1Id
+      - !Ref PrivateSubnet2Id
+      TransitGatewayId: !Ref EuTgw 
+      VpcId: !Ref EuVpcId
+      Tags:
+      - Key: Name
+        Value: eu-tgw-att-vpc
+  
+  EuTgwVpcAttachmentAssociation:
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    DependsOn:
+      - EuTgwAttVpc
+      - EuTgwRt
+    Properties:
+      TransitGatewayAttachmentId: !Ref EuTgwAttVpc
+      TransitGatewayRouteTableId: !Ref EuTgwRt
+
+  EUTgwVpcRoute:
+    Type: AWS::EC2::TransitGatewayRoute
+    DependsOn: EuTgwVpcAttachmentAssociation
+    Properties:
+      DestinationCidrBlock: 10.16.0.0/16
+      TransitGatewayAttachmentId: !Ref EuTgwAttVpc
+      TransitGatewayRouteTableId: !Ref EuTgwRt
+
+  PrivateSubnet1RouteToVpc:
+    Type: AWS::EC2::Route
+    DependsOn: EuTgwVpcAttachmentAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1Id
+      DestinationCidrBlock: 10.32.0.0/16
+      TransitGatewayId: !Ref EuTgw
+
+  PrivateSubnet2RouteToVpc:
+    Type: AWS::EC2::Route
+    DependsOn: EuTgwVpcAttachmentAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2Id
+      DestinationCidrBlock: 10.32.0.0/16
+      TransitGatewayId: !Ref EuTgw 
+  
+Outputs: 
+
+  EuTgwId:
+    Description: The transit gateway for EU region
+    Value: !Ref EuTgw
+    Export:
+      Name: EuTgwId
+  
+  EuTgwRtId:
+    Description: The transit gateway route table for EU region
+    Value: !Ref EuTgwRt
+    Export:
+      Name: EuTgwRtId
+
+  EuTgwAttVpcId:
+    Description: Transit Gateway VPC attachment
+    Value: !Ref EuTgwAttVpc
+    
+
+

@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Peering attachment for EU TransitGateway
+
+Resources:
+
+  TgwAttPeering:
+    Type: AWS::EC2::TransitGatewayPeeringAttachment
+    Properties:
+      PeerTransitGatewayId: <enter us-east-1 transit gateway ID>
+      PeerAccountId: "<enter account number>"
+      PeerRegion: us-east-1
+      TransitGatewayId: !ImportValue EuTgwId
+      Tags:
+        - Key: Name
+          Value: eu-us-tgw-peering-attachment
+
+Outputs:
+  TgwPeeringId:
+    Description: The tgw peering attachment ID
+    Value: !Ref TgwAttPeering
+    Export:
+      Name: eu-us-tgw-peering

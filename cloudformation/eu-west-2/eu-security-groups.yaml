@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creating the security group for region 1
+
+Parameters:
+  EuVpcId:
+    Type: String
+    Description: The EU VPC ID
+
+Resources:
+
+  EuEC2TestSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group that controls EC2 test instances
+      VpcId: !Ref EuVpcId
+      SecurityGroupIngress: 
+        - IpProtocol: -1
+          CidrIp: 10.32.0.0/16
+        - IpProtocol: -1
+          CidrIp: 10.16.0.0/16
+
+      Tags:
+        -  Key: Name
+           Value: eu-west-2-ec2-test-sg
+
+Outputs: 
+  EuEC2TestSgId:
+    Description: Security group for the EU test instances.
+    Value: !Ref EuEC2TestSg
+   
+
+      

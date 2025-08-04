@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Main YAML template for the creation of a multi-region VPC eu-west-2
+
+Resources:
+ 
+  EuWest2VpcStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://tjt-multi-region-vpc-eu.s3.eu-west-2.amazonaws.com/eu-vpc.yaml"
+  
+  EuWest2TgwStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: EuWest2VpcStack
+    Properties:
+      TemplateURL: !Sub "https://tjt-multi-region-vpc-eu.s3.eu-west-2.amazonaws.com/eu.tgw.yaml"
+      Parameters:
+        EuVpcId: !GetAtt EuWest2VpcStack.Outputs.EuVpcId
+        PrivateSubnet1Id: !GetAtt EuWest2VpcStack.Outputs.PrivateSubnet1Id
+        PrivateSubnet2Id: !GetAtt EuWest2VpcStack.Outputs.PrivateSubnet2Id
+        PrivateRouteTable1Id: !GetAtt EuWest2VpcStack.Outputs.PrivateRouteTable1Id 
+        PrivateRouteTable2Id: !GetAtt EuWest2VpcStack.Outputs.PrivateRouteTable2Id
+
+  EuWest2SecurityGroupStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: EuWest2VpcStack
+    Properties:
+      TemplateURL: !Sub "https://tjt-multi-region-vpc-eu.s3.eu-west-2.amazonaws.com/eu-security-groups.yaml"
+      Parameters:
+        EuVpcId: !GetAtt EuWest2VpcStack.Outputs.EuVpcId
+  
+  EuWest2Ec2Stack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - EuWest2VpcStack 
+      - EuWest2SecurityGroupStack
+    Properties:
+      TemplateURL: !Sub "https://tjt-multi-region-vpc-eu.s3.eu-west-2.amazonaws.com/eu-ec2.yaml"
+      Parameters: 
+        EuVpcId: !GetAtt EuWest2VpcStack.Outputs.EuVpcId
+        PublicSubnet1Id: !GetAtt EuWest2VpcStack.Outputs.PublicSubnet1Id
+        PublicSubnet2Id: !GetAtt EuWest2VpcStack.Outputs.PublicSubnet2Id
+        PrivateSubnet1Id: !GetAtt EuWest2VpcStack.Outputs.PrivateSubnet1Id
+        PrivateSubnet2Id: !GetAtt EuWest2VpcStack.Outputs.PrivateSubnet2Id
+        EuEC2TestSgId: !GetAtt EuWest2SecurityGroupStack.Outputs.EuEC2TestSgId

@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Main YAML template for the creation of a multi-region VPC us-east-1
+
+Resources:
+ 
+  UsEast1VpcStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "https://tjt-multi-region-vpc-us.s3.us-east-1.amazonaws.com/us-vpc.yaml"
+
+  
+  UsEast1TgwStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: UsEast1VpcStack
+    Properties:
+      TemplateURL: !Sub "https://tjt-multi-region-vpc-us.s3.us-east-1.amazonaws.com/us-tgw.yaml"
+      Parameters:
+        UsVpcId: !GetAtt UsEast1VpcStack.Outputs.UsVpcId
+        PrivateSubnet1Id: !GetAtt UsEast1VpcStack.Outputs.PrivateSubnet1Id
+        PrivateSubnet2Id: !GetAtt UsEast1VpcStack.Outputs.PrivateSubnet2Id
+        PrivateRouteTable1Id: !GetAtt UsEast1VpcStack.Outputs.PrivateRouteTable1Id
+        PrivateRouteTable2Id: !GetAtt UsEast1VpcStack.Outputs.PrivateRouteTable2Id
+
+  UsEast1SecurityGroupStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: UsEast1VpcStack
+    Properties:
+      TemplateURL: !Sub "https://tjt-multi-region-vpc-us.s3.us-east-1.amazonaws.com/us-security-groups.yaml"
+      Parameters:
+        UsVpcId: !GetAtt UsEast1VpcStack.Outputs.UsVpcId
+  
+  UsEast1Ec2Stack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - UsEast1VpcStack 
+      - UsEast1SecurityGroupStack
+    Properties:
+      TemplateURL: !Sub "https://tjt-multi-region-vpc-us.s3.us-east-1.amazonaws.com/us-ec2.yaml"
+      Parameters: 
+        UsVpcId: !GetAtt UsEast1VpcStack.Outputs.UsVpcId
+        PublicSubnet1Id: !GetAtt UsEast1VpcStack.Outputs.PublicSubnet1Id
+        PublicSubnet2Id: !GetAtt UsEast1VpcStack.Outputs.PublicSubnet2Id
+        PrivateSubnet1Id: !GetAtt UsEast1VpcStack.Outputs.PrivateSubnet1Id
+        PrivateSubnet2Id: !GetAtt UsEast1VpcStack.Outputs.PrivateSubnet2Id
+        UsEC2TestSgId: !GetAtt UsEast1SecurityGroupStack.Outputs.UsEC2TestSgId
