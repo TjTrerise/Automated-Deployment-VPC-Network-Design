@@ -1,4 +1,4 @@
-# Automated Deployment of AWS Multi-Region VPC Network Architecture with Transit Gateway.
+# IaC Deployment of AWS Multi-Region VPC Network Architecture with Transit Gateway.
 
 ## Detailed Deployment Guide
 

@@ -1,15 +1,15 @@
-# Automated Deployment of AWS Multi-Region VPC Network Architecture with Transit Gateway.
+# IaC Deployment of AWS Multi-Region VPC Network Architecture with Transit Gateway.
 
 
 ## Project Overview
 
-This project involves designing an automated, robust, multi-region cloud network architecture on AWS. It leverages core networking components like custom VPCs, public/private subnets, NAT Gateways, EC2 and security groups, with a focus on establishing secure and scalable inter-region connectivity using AWS Transit Gateway.
+This project involves designing an automated, robust, multi-region cloud network architecture on AWS utilising CloudFormation. It leverages core networking components like custom VPCs, public/private subnets, NAT Gateways, EC2 and security groups, with a focus on establishing secure and scalable inter-region connectivity using AWS Transit Gateway.
 
 ![Architecture Design](/docs/automated-multi-region-vpc.drawio.png)
 
 ## Features
 
-- Automated construction of a multi-region cloud network architecture on AWS.
+- IaC to Automat construction of a multi-region cloud network architecture on AWS.
 - Leveraging custom core networking components like custom VPCs, public/private subnets, NAT Gateways, EC2 and security groups.
 - Focus on establishing a secure and scalable inter-region connectivity using AWS Transit Gateway.
 - This project doesn't utilise stack sets as a method to learn YAML. If you want to deploy through a stack set rather than indivudally making two region worth of YAML files that will work too. As it was my first time doing a deployment like this I wanted to do it without the sets. 

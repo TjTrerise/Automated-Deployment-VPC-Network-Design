@@ -1,32 +1,110 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Creating the security group for region 1
+Description: Creating the security group for the multi-tier web app
 
 Parameters:
-  EuVpcId:
+  VpcId:
     Type: String
-    Description: The EU VPC ID
+    Description: The VPC ID
 
 Resources:
 
-  EuEC2TestSg:
+  Ec2AlbSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group that controls the application loadbalancer 
+      VpcId: !Ref VpcId
+      SecurityGroupIngress: 
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+      Tags:
+        -  Key: Name
+           Value: !Sub "{AWS::Region}-mtwa-web-sg"
+  
+  Ec2WebSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group that controls application instance
+      VpcId: !Ref VpcId
+      SecurityGroupIngress: 
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref Ec2Alb
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+      Tags:
+        -  Key: Name
+           Value: !Sub "{AWS::Region}-mtwa-web-sg"
+          
+  Ec2AppSg:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group that controls EC2 test instances
-      VpcId: !Ref EuVpcId
+      VpcId: !Ref VpcId
       SecurityGroupIngress: 
-        - IpProtocol: -1
-          CidrIp: 10.32.0.0/16
-        - IpProtocol: -1
-          CidrIp: 10.16.0.0/16
-
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SecurityGroup: !Ref Ec2WebApp
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref RdsSg
       Tags:
         -  Key: Name
-           Value: eu-west-2-ec2-test-sg
+           Value: !Sub "{AWS::Region}-mtwa-app-sg"
+  
+  RdsSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group that controls the database traffic
+      VpcId: !Ref VpcId
+      SecurityGroupIngress: 
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !Ref Ec2AppSg
+      Tags:
+        -  Key: Name
+           Value: !Sub "{AWS::Region}-mtwa-rds-sg"
+
+
+        
 
 Outputs: 
-  EuEC2TestSgId:
-    Description: Security group for the EU test instances.
-    Value: !Ref EuEC2TestSg
+  Ec2AlbSgId:
+    Description: The ALB for the multi-tier app 
+    Value: !Ref Ec2AlbSg
+    Export:
+      Name: Ec2AlbSgId
+
+  Ec2WebSgId:
+    Description: The sg for the web instances
+    Value: !Ref Ec2WebSg
+    Export:
+      Name: Ec2WebSgId
+
+  Ec2AppSgId:
+    Description: Security group for app instances
+    Value: !Ref Ec2AppSg
+    Export:
+      Name: Ec2AppSgId
+  
+  RdsSgId:
+    Description: Security group for rds 
+    Value: !Ref RdsSg
+    Export:
+      Name: RdsSgId
    
 
       
